@@ -27,7 +27,7 @@ def write_simple_info(run_config):
         "commit_id": get_current_head(project_root_path)
     }
 
-    version_control_file = version_control_root_path.joinpath("vcs_info.json")
+    version_control_file = version_control_root_path.joinpath("_vcs_info.json")
     f = open(version_control_file, "w")
     f.write(json.dumps(simple_info, indent=4))
     f.close()
