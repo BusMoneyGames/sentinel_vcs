@@ -18,7 +18,7 @@ def write_simple_info(run_config):
     project_root_path = run_config["environment"]["version_control_root"]
     path = pathlib.Path(config_folder_abs_path)
 
-    version_control_root_path = path.joinpath("_version_control")
+    version_control_root_path = path.joinpath("gen_version_control")
     if not version_control_root_path.exists():
         os.makedirs(version_control_root_path)
 
@@ -27,7 +27,7 @@ def write_simple_info(run_config):
         "commit_id": get_current_head(project_root_path)
     }
 
-    version_control_file = version_control_root_path.joinpath("_vcs_info.json")
+    version_control_file = version_control_root_path.joinpath("gen_vcs_info.json")
     f = open(version_control_file, "w")
     f.write(json.dumps(simple_info, indent=4))
     f.close()
