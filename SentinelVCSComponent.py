@@ -3,7 +3,6 @@ import pathlib
 import click
 import json
 from Vcs import GitComponent
-import os
 
 L = logging.getLogger()
 
@@ -53,6 +52,15 @@ def refresh(ctx, output):
     config_path = pathlib.Path(ctx.obj['PROJECT_ROOT']).joinpath("_generated_sentinel_config.json")
     environment_config = _read_config(config_path)
     GitComponent.write_simple_info(environment_config)
+
+
+@cli.command()
+@click.pass_context
+def find_missing_commits(ctx):
+    config_path = pathlib.Path(ctx.obj['PROJECT_ROOT']).joinpath("_generated_sentinel_config.json")
+    environment_config = _read_config(config_path)
+    walker = GitComponent.GitRepoWalker(environment_config)
+
 
 
 if __name__ == "__main__":
