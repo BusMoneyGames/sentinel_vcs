@@ -37,13 +37,31 @@ def write_simple_info(run_config):
     f.close()
 
 
+def write_history_file(environment_config, commit_id):
+    """
+    Writes an info file about the commit
+    """
+
+    walker = GitRepoWalker(environment_config)
+
+    path = pathlib.Path(environment_config["environment"]["sentinel_artifacts_path"]).joinpath("vcs_info.json")
+    entry = walker.get_entry_from_commit_id(commit_id)
+
+    f = open(path, "w")
+    f.write(json.dumps(entry, indent=4))
+    f.close()
+
+
 class GitRepoWalker:
 
     def __init__(self, environment_config):
         project_root_path = environment_config["environment"]["version_control_root"]
 
         self.repo = git.Repo(project_root_path)
-        self.commits = self._get_commit_history()
+        self.commits = []
+        self.commit_ids = []
+        self.history = self._construct_git_history()
+        self.current_commit = ""
 
     def _clean_repo(self):
         self.repo.git.reset("--hard")
@@ -53,10 +71,40 @@ class GitRepoWalker:
         self._clean_repo()
         self.repo.git.checkout(commit_id)
 
-    def _get_commit_history(self):
-        commits = []
+        self.current_commit = commit_id
+
+    @staticmethod
+    def _create_json_entry_for_commit(commit):
+
+        entry = {"commit_time": str(commit.committed_datetime),
+                 "commit_sha": str(commit.hexsha),
+                 "comitter": str(commit.committer),
+                 "message": commit.message,
+                 "changes": commit.stats.files}
+
+        return entry
+
+    def get_entry_from_commit_id(self, commit_id):
+
+        entry = ""
         for commit in self.repo.iter_commits():
-            commits.append(commit)
+            if str(commit.hexsha).startswith(commit_id):
+                entry = self._create_json_entry_for_commit(commit)
+                break
 
-        return commits
+        if not entry:
+            print("Error: %s not found in history", commit_id)
 
+        return entry
+
+    def _construct_git_history(self):
+
+        root = {}
+        for commit in self.repo.iter_commits():
+            root[commit.hexsha] = self._create_json_entry_for_commit(commit)
+
+            # Todo refactor whatever uses the commits to user the json file
+            self.commits.append(commit)
+            self.commit_ids.append(commit.hexsha)
+
+        return root

@@ -55,6 +55,18 @@ def refresh(ctx, output):
 
 
 @cli.command()
+@click.option('-o', '--output', type=click.Choice(['text', 'json']), default='text', help="Output type.")
+@click.option('--commit_id', help="Commit ID")
+@click.pass_context
+def write_history_file(ctx, output, commit_id):
+    """Generates a config file """
+
+    config_path = pathlib.Path(ctx.obj['PROJECT_ROOT']).joinpath("_generated_sentinel_config.json")
+    environment_config = _read_config(config_path)
+    GitComponent.write_history_file(environment_config, commit_id)
+
+
+@cli.command()
 @click.pass_context
 def find_missing_commits(ctx):
     config_path = pathlib.Path(ctx.obj['PROJECT_ROOT']).joinpath("_generated_sentinel_config.json")
