@@ -24,23 +24,16 @@ def _read_config(path):
 
 
 @click.group()
-@click.option('--project_root', default="", help="path to the config overwrite folder")
-@click.option('--debug', default=False, help="Turns on debug messages")
+@click.option('--project_root', default="", help="Path to the config overwrite folder")
+@click.option('--output', type=click.Choice(['text', 'json']), default='text', help="Output type.")
+@click.option('--no_version', type=click.Choice(['true', 'false']), default='true', help="Skips output version")
+@click.option('--debug', type=click.Choice(['true', 'false']), default='false', help="Verbose logging")
 @click.pass_context
-def cli(ctx, project_root, debug):
+def cli(ctx, project_root, output, no_version, debug):
     """Sentinel Unreal Component handles running commands interacting with unreal engine"""
 
     ctx.ensure_object(dict)
     ctx.obj['PROJECT_ROOT'] = project_root
-
-    if debug:
-        L.setLevel(logging.DEBUG)
-        message_format = '%(levelname)s - %(message)s '
-    else:
-        message_format = '%(levelname)s %(message)s '
-        L.setLevel(logging.ERROR)
-
-    logging.basicConfig(format=message_format)
 
 
 @cli.command()
