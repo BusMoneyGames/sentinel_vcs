@@ -17,6 +17,7 @@ def write_simple_info(run_config):
 
     config_folder_abs_path = run_config["environment"]["sentinel_config_root_path"]
     project_root_path = run_config["environment"]["version_control_root"]
+
     path = pathlib.Path(config_folder_abs_path)
 
     version_control_root_path = path.joinpath("gen_version_control")
