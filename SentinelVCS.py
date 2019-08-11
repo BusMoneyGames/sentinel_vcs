@@ -4,7 +4,7 @@ import click
 import json
 from Vcs import GitComponent
 
-L = logging.getLogger()
+from SentinelInternalLogger.logger import L
 
 
 def _read_config(path):
@@ -31,6 +31,10 @@ def _read_config(path):
 @click.pass_context
 def cli(ctx, project_root, output, no_version, debug):
     """Sentinel Unreal Component handles running commands interacting with unreal engine"""
+
+
+    if debug == 'true':
+        L.setLevel(logging.DEBUG)
 
     ctx.ensure_object(dict)
     ctx.obj['PROJECT_ROOT'] = project_root
