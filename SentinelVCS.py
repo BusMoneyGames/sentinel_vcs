@@ -39,7 +39,7 @@ def cli(ctx, project_root, output, no_version, debug):
 @cli.command()
 @click.option('-o', '--output', type=click.Choice(['text', 'json']), default='text', help="Output type.")
 @click.pass_context
-def refresh(ctx, output):
+def refresh_current_status(ctx, output):
     """Generates a config file """
 
     config_path = pathlib.Path(ctx.obj['PROJECT_ROOT']).joinpath("_generated_sentinel_config.json")
