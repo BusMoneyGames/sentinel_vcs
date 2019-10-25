@@ -32,7 +32,6 @@ def _read_config(path):
 def cli(ctx, project_root, output, no_version, debug):
     """Sentinel Unreal Component handles running commands interacting with unreal engine"""
 
-
     if debug == 'true':
         L.setLevel(logging.DEBUG)
 
@@ -49,6 +48,31 @@ def refresh_current_status(ctx, output):
     config_path = pathlib.Path(ctx.obj['PROJECT_ROOT']).joinpath("_generated_sentinel_config.json")
     environment_config = _read_config(config_path)
     GitComponent.write_simple_info(environment_config)
+
+
+@cli.command()
+@click.option('-o', '--output', type=click.Choice(['text', 'json']), default='text', help="Output type.")
+@click.pass_context
+def list_modified_files(ctx, output):
+    """Return files that have been changed in workspace """
+
+    config_path = pathlib.Path(ctx.obj['PROJECT_ROOT']).joinpath("_generated_sentinel_config.json")
+    environment_config = _read_config(config_path)
+    modified_files = GitComponent.get_modified_files(environment_config)
+
+    print(json.dumps(modified_files, indent=4))
+
+@cli.command()
+@click.option('-o', '--output', type=click.Choice(['text', 'json']), default='text', help="Output type.")
+@click.pass_context
+def list_submodules(ctx, output):
+    """Return files that have been changed in workspace """
+
+    config_path = pathlib.Path(ctx.obj['PROJECT_ROOT']).joinpath("_generated_sentinel_config.json")
+    environment_config = _read_config(config_path)
+    submodules = GitComponent.list_submodules(environment_config)
+
+    print(json.dumps(submodules, indent=4))
 
 
 @cli.command()

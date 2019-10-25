@@ -2,6 +2,7 @@ import pathlib
 import os
 import json
 import git
+import pprint
 
 
 def get_current_head(root_path):
@@ -12,6 +13,46 @@ def get_current_head(root_path):
 
     return short_sha
 
+
+def list_modified_files(run_config):
+    """
+    List modified files in the project and marks them with
+    A: Add
+    D: Delete
+    M: Modified
+    """
+    root_path = run_config["environment"]["version_control_root"]
+    repo = git.Repo(root_path)
+
+    modified_files = {}
+    for each_diff_object in repo.index.diff(None):
+        # print(each_diff_object.change_type)
+        modified_files[each_diff_object.a_path] = {"change_type": each_diff_object.change_type}
+
+    return modified_files
+
+
+def list_submodules(run_config):
+    """List the submodules in the project
+    TODO: Make sure that we handle recursive submodules
+    """
+    root_path = run_config["environment"]["version_control_root"]
+    repo = git.Repo(root_path)
+
+    submodule_report = {}
+
+    for each_submodule in repo.submodules:
+        sub_repo = each_submodule.module()
+        submodule_report[each_submodule.name] = {"submodules": sub_repo.submodules}
+        print(each_submodule.name)
+        # pprint.pprint(dir(sub_repo))
+        # each_submodule.update(init=True)
+        # pprint.pprint(dir(each_submodule.repo))
+        # a = each_submodule.repo.git.execute("git status")
+        # pprint.pprint(dir(each_submodule))
+        # each_submodule.update()
+
+    return submodule_report
 
 def write_simple_info(run_config):
 
