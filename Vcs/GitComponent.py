@@ -5,13 +5,32 @@ import git
 import pprint
 
 
-def get_current_head(root_path):
+def get_commit_id(repo):
 
-    repo = git.Repo(root_path)
     sha = repo.head.object.hexsha
     short_sha = repo.git.rev_parse(sha, short=7)
 
     return short_sha
+
+
+def get_info_from_commit(commit):
+
+    info = {
+        "commit_id": commit_id,
+        "message": str(commit.message),
+        "author": str(commit.head.object.author),
+        "date": str(commit.head.object.committed_datetime),
+        "updates": "files"
+    }
+
+    return info
+
+
+def get_file_history(repo, path):
+    commits_touching_path = list(repo.iter_commits(paths=path))
+
+    for each in commits_touching_path:
+        print(each)
 
 
 def list_modified_files(run_config):
@@ -54,11 +73,12 @@ def list_submodules(run_config):
 
     return submodule_report
 
-def write_simple_info(run_config):
+
+def update_sentinel_config(run_config):
+    """Adds version control information from the current commit to the config file"""
 
     config_folder_abs_path = run_config["environment"]["sentinel_config_root_path"]
     project_root_path = run_config["environment"]["version_control_root"]
-
     path = pathlib.Path(config_folder_abs_path)
 
     version_control_root_path = path.joinpath("gen_version_control")
@@ -66,11 +86,21 @@ def write_simple_info(run_config):
     if not version_control_root_path.exists():
         os.makedirs(version_control_root_path)
 
-    get_current_head(project_root_path)
+    repo = git.Repo(project_root_path)
+    commit_id = get_commit_id(repo)
+
+    for each_file in repo.head.object.stats.files:
+        get_file_history(repo, each_file)
 
     simple_info = {
-        "commit_id": get_current_head(project_root_path)
+        "commit_id": commit_id,
+        "message": str(repo.head.object.message),
+        "author": str(repo.head.object.author),
+        "date": str(repo.head.object.committed_datetime),
+        "updates": "files"
     }
+
+    pprint.pprint(simple_info)
 
     version_control_file = version_control_root_path.joinpath("gen_vcs_info.json")
 
