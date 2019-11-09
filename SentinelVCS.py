@@ -4,8 +4,6 @@ import click
 import json
 from Vcs import GitComponent
 
-from SentinelInternalLogger.logger import L
-
 
 def _read_config(path):
     """Reads the assembled config"""
