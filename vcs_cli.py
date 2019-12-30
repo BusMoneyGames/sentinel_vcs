@@ -8,8 +8,6 @@ from Vcs import GitComponent
 def _read_config(path):
     """Reads the assembled config"""
 
-    L.debug("Reading config from: %s - Exists: %s", path, path.exists())
-
     if path.exists():
         f = open(path, "r")
         config = json.load(f)
@@ -17,7 +15,6 @@ def _read_config(path):
 
         return config
     else:
-        L.error("Unable to find generated config at: %s ", path)
         quit(1)
 
 
