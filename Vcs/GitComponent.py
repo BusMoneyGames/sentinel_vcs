@@ -4,13 +4,27 @@ import json
 import git
 import pprint
 
+class GitInfo():
 
-def get_commit_id(repo):
+    def __init__(self, run_config):
+        root_path = run_config["environment"]["version_control_root"]
+        self.repo = git.Repo(root_path)
+
+    def get_commit_id(self, short=False):
+
+        commitID = get_commit_id(self.repo, short)
+        return commitID
+    
+
+def get_commit_id(repo, short=False):
 
     sha = repo.head.object.hexsha
-    short_sha = repo.git.rev_parse(sha, short=7)
+    if short:
+        commit_id = repo.git.rev_parse(sha, short=7)
+    else:
+        commit_id = repo.git.rev_parse(sha)
 
-    return short_sha
+    return commit_id
 
 
 def get_info_from_commit(commit):
@@ -40,6 +54,7 @@ def list_modified_files(run_config):
     D: Delete
     M: Modified
     """
+
     root_path = run_config["environment"]["version_control_root"]
     repo = git.Repo(root_path)
 

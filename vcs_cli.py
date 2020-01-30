@@ -80,5 +80,17 @@ def find_missing_commits(ctx):
     walker = GitComponent.GitRepoWalker(get_config(ctx))
 
 
+@cli.command()
+@click.option('--short', is_flag=True, help="return as short commit")
+@click.pass_context
+def get_commit_id(ctx, short):
+    
+    config = get_config(ctx)
+    
+    git_info = GitComponent.GitInfo(config)
+    commitID = git_info.get_commit_id(short)
+    print (commitID)
+
+
 if __name__ == "__main__":
     cli()
