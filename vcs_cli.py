@@ -1,9 +1,9 @@
 import logging
 import pathlib
+from pprint import pprint
 import click
 import json
 from Vcs import GitComponent
-
 
 def _read_config(path):
     """Reads the assembled config"""
@@ -15,6 +15,8 @@ def _read_config(path):
 
         return config
     else:
+        print(f"No config found at {path}")
+        print("Exiting!")
         quit(1)
 
 
@@ -35,10 +37,6 @@ def get_config(ctx):
 @click.pass_context
 def cli(ctx, project_root, output, no_version, debug):
     """Sentinel Unreal Component handles running commands interacting with unreal engine"""
-
-    if debug == 'true':
-        L.setLevel(logging.DEBUG)
-
     ctx.ensure_object(dict)
     ctx.obj['PROJECT_ROOT'] = project_root
 
@@ -82,14 +80,19 @@ def find_missing_commits(ctx):
 
 @cli.command()
 @click.option('--short', is_flag=True, help="return as short commit")
+@click.option('-o', '--output', type=click.Choice(['text', 'json']), default='text', help="Output type.")
 @click.pass_context
-def get_commit_id(ctx, short):
-    
+def get_commit_id(ctx, short, output):
+
     config = get_config(ctx)
-    
     git_info = GitComponent.GitInfo(config)
     commitID = git_info.get_commit_id(short)
-    print (commitID)
+
+    if output == 'json':
+        pprint({"commitID":commitID})
+    elif output == 'text':
+        print(commitID)
+
 
 
 if __name__ == "__main__":

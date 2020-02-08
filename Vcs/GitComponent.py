@@ -13,6 +13,7 @@ class GitInfo():
     def get_commit_id(self, short=False):
 
         commitID = get_commit_id(self.repo, short)
+
         return commitID
     
 
