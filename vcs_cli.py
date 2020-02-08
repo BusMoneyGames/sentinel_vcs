@@ -29,6 +29,14 @@ def get_config(ctx):
     """Return the environment config dict"""
     return _read_config(get_config_path(ctx))
 
+def get_git_info_object(ctx, commit_id=""):
+    """return the commit id based on the config"""
+
+    config = get_config(ctx)
+    git_info = GitComponent.GitInfo(config, commit_id=commit_id)
+
+    return git_info
+
 @click.group()
 @click.option('--project_root', default="", help="Path to the config overwrite folder")
 @click.option('--output', type=click.Choice(['text', 'json']), default='text', help="Output type.")
@@ -40,26 +48,21 @@ def cli(ctx, project_root, output, no_version, debug):
     ctx.ensure_object(dict)
     ctx.obj['PROJECT_ROOT'] = project_root
 
-
 @cli.command()
 @click.option('-o', '--output', type=click.Choice(['text', 'json']), default='text', help="Output type.")
+@click.option('--commit', default="", help="Commit ID, return current if not specified")
 @click.pass_context
-def update_config(ctx, output):
-    """Updates sentinel config with the relevant information"""
+def get_commit_details(ctx, output, commit):
+    """Return information about the commit"""
+    
+    info = get_git_info_object(ctx, commit)
+    
+    commit_info = info.get_info_from_commit()
 
-    GitComponent.update_sentinel_config(get_config(ctx))
-
-
-@cli.command()
-@click.option('-o', '--output', type=click.Choice(['text', 'json']), default='text', help="Output type.")
-@click.pass_context
-def list_modified_files(ctx, output):
-    """Return files that have been changed in workspace"""
-
-    modified_files = GitComponent.get_modified_files(get_config(ctx))
-
-    print(json.dumps(modified_files, indent=4))
-
+    if output == 'json':
+        print(json.dumps(commit_info, indent=4))
+    elif output == 'text':
+        print("")
 
 @cli.command()
 @click.option('-o', '--output', type=click.Choice(['text', 'json']), default='text', help="Output type.")
@@ -69,30 +72,28 @@ def list_submodules(ctx, output):
 
     submodules = GitComponent.list_submodules(get_config(ctx))
 
-    print(json.dumps(submodules, indent=4))
-
-@cli.command()
-@click.pass_context
-def find_missing_commits(ctx):
-    # TODO make this do something
-    walker = GitComponent.GitRepoWalker(get_config(ctx))
-
+    if output == 'json':
+        print(json.dumps(submodules, indent=4))
+    elif output == 'text':
+        print(submodules)
 
 @cli.command()
 @click.option('--short', is_flag=True, help="return as short commit")
 @click.option('-o', '--output', type=click.Choice(['text', 'json']), default='text', help="Output type.")
 @click.pass_context
-def get_commit_id(ctx, short, output):
-
-    config = get_config(ctx)
-    git_info = GitComponent.GitInfo(config)
-    commitID = git_info.get_commit_id(short)
+def get_current_commit_id(ctx, short, output):
+    """Returns the current commit ID"""
+    info = get_git_info_object(ctx)
+    
+    if short:
+        commit_id = info.short_commit_id
+    else:
+        commit_id = info.commit_id
 
     if output == 'json':
-        pprint({"commitID":commitID})
+        print(json.dumps({"commitID":commit_id}, indent=4))
     elif output == 'text':
-        print(commitID)
-
+        print(commit_id)
 
 
 if __name__ == "__main__":

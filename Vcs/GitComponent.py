@@ -6,16 +6,55 @@ import pprint
 
 class GitInfo():
 
-    def __init__(self, run_config):
+    def __init__(self, run_config, commit_id=""):
+
         root_path = run_config["environment"]["version_control_root"]
         self.repo = git.Repo(root_path)
 
+        if commit_id:
+            self.commit_id = commit_id
+            self.short_commit_id = commit_id[:7]
+        else:
+            self.commit_id = self._get_commit_id(short=False)
+            self.short_commit_id = self._get_commit_id(short=True)
+
     def get_commit_id(self, short=False):
 
-        commitID = get_commit_id(self.repo, short)
+        commitID = self._get_commit_id(short)
 
         return commitID
-    
+
+    def _get_commit_id(self, short=False):
+
+        sha = self.repo.head.object.hexsha
+
+        if short:
+            commit_id = self.repo.git.rev_parse(sha, short=7)
+        else:
+            commit_id = self.repo.git.rev_parse(sha)
+
+        return commit_id
+
+    def get_info_from_commit(self):
+        changed_files = []
+
+        commit = self.repo.commit(self.commit_id)
+        for e in commit.tree:
+            if type(e) == git.objects.blob.Blob:
+                changed_files.append(e.path)
+            elif type(e) == git.objects.tree.Tree:
+                for t in e.blobs:
+                    changed_files.append(t.path)
+
+        info = {
+            "commit_id": self.commit_id,
+            "message": str(commit.message),
+            "author": str(commit.author),
+            "date": str(commit.committed_datetime),
+            "changes": changed_files
+        }
+
+        return info
 
 def get_commit_id(repo, short=False):
 
@@ -31,7 +70,7 @@ def get_commit_id(repo, short=False):
 def get_info_from_commit(commit):
 
     info = {
-        "commit_id": commit_id,
+        "commit_id": commit,
         "message": str(commit.message),
         "author": str(commit.head.object.author),
         "date": str(commit.head.object.committed_datetime),
